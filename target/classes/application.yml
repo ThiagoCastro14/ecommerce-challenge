@@ -1,4 +1,20 @@
 spring:
+  application:
+    name: ecommerce-challenge
+
+  profiles:
+    active: dev
+
+---
+
+# ==========================
+# PROFILE: DEV (LOCAL DOCKER)
+# ==========================
+spring:
+  config:
+    activate:
+      on-profile: dev
+
   datasource:
     url: jdbc:mysql://localhost:3306/ecommerce_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
     username: root
@@ -12,15 +28,56 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.MySQL8Dialect
     show-sql: true
+    open-in-view: false
 
   kafka:
     bootstrap-servers: localhost:9092
+    consumer:
+      group-id: ecommerce-group
+      auto-offset-reset: earliest
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
 
   elasticsearch:
     uris: http://localhost:9200
 
-  application:
-    name: ecommerce-challenge
+server:
+  port: 8080
+
+logging:
+  level:
+    root: INFO
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%clr(%d{HH:mm:ss}){blue} %clr(%-5level) %clr(%logger{36}){cyan} - %msg%n"
+
+---
+
+# ==========================
+# PROFILE: PROD (REMOTE)
+# ==========================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: jdbc:mysql://db-prod:3306/ecommerce_db
+    username: admin
+    password: ${DB_PASSWORD:changeme}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  kafka:
+    bootstrap-servers: kafka-prod:9092
+
+  elasticsearch:
+    uris: http://elasticsearch-prod:9200
 
 server:
   port: 8080
+
+logging:
+  level:
+    root: WARN
